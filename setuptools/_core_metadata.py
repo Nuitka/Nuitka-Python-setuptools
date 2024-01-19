@@ -40,32 +40,24 @@ def rfc822_unescape(content: str) -> str:
 def _read_field_from_msg(msg: Message, field: str) -> Optional[str]:
     """Read Message header field."""
     value = msg[field]
-    if value == 'UNKNOWN':
-        return None
-    return value
+    return None if value == 'UNKNOWN' else value
 
 
 def _read_field_unescaped_from_msg(msg: Message, field: str) -> Optional[str]:
     """Read Message header field and apply rfc822_unescape."""
     value = _read_field_from_msg(msg, field)
-    if value is None:
-        return value
-    return rfc822_unescape(value)
+    return value if value is None else rfc822_unescape(value)
 
 
 def _read_list_from_msg(msg: Message, field: str) -> Optional[List[str]]:
     """Read Message header field and return all results as list."""
     values = msg.get_all(field, None)
-    if values == []:
-        return None
-    return values
+    return None if values == [] else values
 
 
 def _read_payload_from_msg(msg: Message) -> Optional[str]:
     value = msg.get_payload().strip()
-    if value == 'UNKNOWN' or not value:
-        return None
-    return value
+    return None if value == 'UNKNOWN' or not value else value
 
 
 def read_pkg_file(self, file):

@@ -89,8 +89,7 @@ def best_effort_version(version: str) -> str:
         return safe_version(version)
     except packaging.version.InvalidVersion:
         v = version.replace(' ', '.')
-        match = _PEP440_FALLBACK.search(v)
-        if match:
+        if match := _PEP440_FALLBACK.search(v):
             safe = match["safe"]
             rest = v[len(safe) :]
         else:
