@@ -4,6 +4,9 @@ import itertools
 import os
 import sys
 from collections.abc import Iterator
+import itertools
+import json
+import shutil
 from importlib.machinery import EXTENSION_SUFFIXES
 from importlib.util import cache_from_source as _compiled_file_name
 from pathlib import Path
@@ -399,7 +402,7 @@ class build_ext(_build_ext):
             os.unlink(stub_file)
 
 
-if use_stubs or os.name == 'nt':
+if False:  # use_stubs or os.name == 'nt':
     # Build shared libraries
     #
     def link_shared_object(
@@ -460,10 +463,30 @@ else:
 
         assert output_dir is None  # distutils build_ext doesn't pass this
         output_dir, filename = os.path.split(output_libname)
-        basename, _ext = os.path.splitext(filename)
+        basename, ext = os.path.splitext(filename)
         if self.library_filename("x").startswith('lib'):
             # strip 'lib' prefix; this is kludgy if some platform uses
             # a different prefix
             basename = basename[3:]
 
         self.create_static_lib(objects, basename, output_dir, debug, target_lang)
+
+        result_path = self.library_filename(basename, output_dir=os.path.abspath("."))
+
+        with open(result_path + '.link.json', 'w') as f:
+            json.dump({
+                'libraries': libraries,
+                'library_dirs': library_dirs,
+                'extra_postargs': extra_postargs,
+                'extra_preargs': extra_preargs}, f)
+
+        for lib in libraries:
+            for dir in library_dirs:
+                lib_install_dir = os.path.join(output_dir, dir)
+                if os.path.isfile(os.path.join(dir, lib + '.lib')):
+                    if not os.path.isabs(dir):
+                        if not os.path.exists(lib_install_dir):
+                            os.makedirs(lib_install_dir)
+                        shutil.copyfile(os.path.join(dir, lib + '.lib'),
+                                        os.path.join(lib_install_dir, lib + '.lib'))
+                    break

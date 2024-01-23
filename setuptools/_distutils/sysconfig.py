@@ -354,6 +354,10 @@ def customize_compiler(compiler: CCompiler) -> None:
         ldshared = _add_flags(ldshared, 'CPP')
         ldcxxshared = _add_flags(ldcxxshared, 'CPP')
 
+        cflags = ' '.join([x for x in cflags.split(' ') if
+                           not x.startswith('-I') or (
+                                   'Nuitka-Python-Deps' not in x and 'dependencies' not in x)])
+
         ar = os.environ.get('AR', ar)
 
         archiver = ar + ' ' + os.environ.get('ARFLAGS', ar_flags)
