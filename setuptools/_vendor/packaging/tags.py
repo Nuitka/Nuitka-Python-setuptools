@@ -255,6 +255,8 @@ def _generic_abi() -> list[str]:
     # - graalpy: '.graalpy-38-native-x86_64-darwin.dylib'
     #                                               => graalpy_38_native
 
+    return [_normalize_string(sysconfig.get_config_var("SOABI"))]
+
     ext_suffix = _get_config_var("EXT_SUFFIX", warn=True)
     if not isinstance(ext_suffix, str) or ext_suffix[0] != ".":
         raise SystemError("invalid sysconfig.get_config_var('EXT_SUFFIX')")
