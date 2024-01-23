@@ -301,17 +301,18 @@ class MSVCCompiler(CCompiler):
         self.rc = _find_exe("rc.exe", paths)  # resource compiler
         self.mc = _find_exe("mc.exe", paths)  # message compiler
         self.mt = _find_exe("mt.exe", paths)  # message compiler
+        self.dumpbin = _find_exe("dumpbin.exe", paths)
 
         self.preprocess_options = None
         # bpo-38597: Always compile with dynamic linking
         # Future releases of Python 3.x will include all past
         # versions of vcruntime*.dll for compatibility.
-        self.compile_options = ['/nologo', '/O2', '/W3', '/GL', '/DNDEBUG', '/MD']
+        self.compile_options = ['/nologo', '/O2', '/W3', '/GL', '/DNDEBUG', '/MT']
 
         self.compile_options_debug = [
             '/nologo',
             '/Od',
-            '/MDd',
+            '/MTd',
             '/Zi',
             '/W3',
             '/D_DEBUG',
@@ -493,6 +494,7 @@ class MSVCCompiler(CCompiler):
         extra_postargs=None,
         build_temp=None,
         target_lang=None,
+        extra_midargs=None,
     ):
         if not self.initialized:
             self.initialize()
@@ -534,6 +536,8 @@ class MSVCCompiler(CCompiler):
 
             if extra_preargs:
                 ld_args[:0] = extra_preargs
+            if extra_midargs:
+                ld_args.extend(extra_midargs)
             if extra_postargs:
                 ld_args.extend(extra_postargs)
 
@@ -588,6 +592,8 @@ class MSVCCompiler(CCompiler):
         return self.library_filename(lib)
 
     def find_library_file(self, dirs, lib, debug=False):
+        if len(dirs) == 1 and os.path.isfile(os.path.join(dirs[0], lib)):
+            return os.path.join(dirs[0], lib)
         # Prefer a debugging library if found (and requested), but deal
         # with it if we don't have one.
         if debug:

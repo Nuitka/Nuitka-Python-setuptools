@@ -131,6 +131,13 @@ class UnixCCompiler(CCompiler):
     if sys.platform[:6] == "darwin":
         executables['ranlib'] = ["ranlib"]
 
+    # Nuitka: Make sure to use the original settings
+    executables["compiler"] = sysconfig.get_config_var("CC")
+    executables["compiler_so"] = sysconfig.get_config_var("CC")
+    executables["compiler_cxx"] = sysconfig.get_config_var("CXX")
+    executables["linker_so"] = sysconfig.get_config_var("CC")
+    executables["linker_exe"] = sysconfig.get_config_var("CC")
+
     # Needed for the filename generation methods provided by the base
     # class, CCompiler.  NB. whoever instantiates/uses a particular
     # UnixCCompiler instance should set 'shared_lib_ext' -- we set a
@@ -240,6 +247,7 @@ class UnixCCompiler(CCompiler):
         extra_postargs=None,
         build_temp=None,
         target_lang=None,
+        extra_midargs=None,
     ):
         objects, output_dir = self._fix_object_args(objects, output_dir)
         fixed_args = self._fix_lib_args(libraries, library_dirs, runtime_library_dirs)
@@ -252,11 +260,14 @@ class UnixCCompiler(CCompiler):
             output_filename = os.path.join(output_dir, output_filename)
 
         if self._need_link(objects, output_filename):
-            ld_args = objects + self.objects + lib_opts + ['-o', output_filename]
+            ld_args = objects + self.objects
             if debug:
                 ld_args[:0] = ['-g']
+            if extra_midargs:
+                ld_args += extra_midargs
             if extra_preargs:
                 ld_args[:0] = extra_preargs
+            ld_args += lib_opts + ['-o', output_filename]
             if extra_postargs:
                 ld_args.extend(extra_postargs)
             self.mkpath(os.path.dirname(output_filename))
@@ -265,6 +276,8 @@ class UnixCCompiler(CCompiler):
                 # building an executable or linker_so (with shared options)
                 # when building a shared library.
                 building_exe = target_desc == CCompiler.EXECUTABLE
+                if not building_exe:
+                    raise NotImplemented("No shared libs in Nuitka-Python")
                 linker = (
                     self.linker_exe
                     if building_exe
@@ -387,10 +400,10 @@ class UnixCCompiler(CCompiler):
         assume that *all* Unix C compilers do,
         ignoring even GCC's "-static" option.
         """
-        lib_names = (
+        lib_names = [lib] + [
             self.library_filename(lib, lib_type=type)
             for type in 'dylib xcode_stub shared static'.split()
-        )
+        ]
 
         roots = map(self._library_root, dirs)
 
