@@ -345,6 +345,10 @@ def customize_compiler(compiler):  # noqa: C901
         else:
             archiver = ar + ' ' + ar_flags
 
+        cflags = ' '.join([x for x in cflags.split(' ') if
+                           not x.startswith('-I') or (
+                                   'Nuitka-Python-Deps' not in x and 'dependencies' not in x)])
+
         cc_cmd = cc + ' ' + cflags
         compiler.set_executables(
             preprocessor=cpp,

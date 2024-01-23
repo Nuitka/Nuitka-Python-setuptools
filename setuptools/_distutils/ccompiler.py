@@ -655,6 +655,7 @@ class CCompiler:
         extra_postargs=None,
         build_temp=None,
         target_lang=None,
+        extra_midargs=None,
     ):
         """Link a bunch of stuff together to create an executable or
         shared library file.
@@ -718,6 +719,7 @@ class CCompiler:
         build_temp=None,
         target_lang=None,
     ):
+        raise NotImplementedError('Building shared libs is disabled for Nuitka-Python')
         self.link(
             CCompiler.SHARED_LIBRARY,
             objects,
@@ -749,6 +751,7 @@ class CCompiler:
         build_temp=None,
         target_lang=None,
     ):
+        raise NotImplementedError('Building shared libs is disabled for Nuitka-Python')
         self.link(
             CCompiler.SHARED_OBJECT,
             objects,
@@ -777,6 +780,7 @@ class CCompiler:
         extra_preargs=None,
         extra_postargs=None,
         target_lang=None,
+        extra_midargs=None,
     ):
         self.link(
             CCompiler.EXECUTABLE,
@@ -792,6 +796,7 @@ class CCompiler:
             extra_postargs,
             None,
             target_lang,
+            extra_midargs,
         )
 
     # -- Miscellaneous methods -----------------------------------------
@@ -1012,6 +1017,9 @@ int main (int argc, char **argv) {
             raise ValueError(f"'lib_type' must be {expected}")
         fmt = getattr(self, lib_type + "_lib_format")
         ext = getattr(self, lib_type + "_lib_extension")
+
+        if libname.endswith(ext):
+            ext = ""
 
         dir, base = os.path.split(libname)
         filename = fmt % (base, ext)
@@ -1248,5 +1256,9 @@ def gen_lib_options(compiler, library_dirs, runtime_library_dirs, libraries):
                     "no library file corresponding to '%s' found (skipping)" % lib
                 )
         else:
-            lib_opts.append(compiler.library_option(lib))
+            lib_file = compiler.find_library_file(library_dirs, lib_name)
+            if lib_file is not None and lib_file.endswith('.a'):
+                lib_opts.append(lib_file)
+            else:
+                lib_opts.append(compiler.library_option(lib))
     return lib_opts

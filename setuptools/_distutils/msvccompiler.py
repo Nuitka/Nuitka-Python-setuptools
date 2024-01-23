@@ -314,11 +314,11 @@ class MSVCCompiler(CCompiler):
 
         self.preprocess_options = None
         if self.__arch == "Intel":
-            self.compile_options = ['/nologo', '/O2', '/MD', '/W3', '/GX', '/DNDEBUG']
+            self.compile_options = ['/nologo', '/O2', '/MT', '/W3', '/GX', '/DNDEBUG']
             self.compile_options_debug = [
                 '/nologo',
                 '/Od',
-                '/MDd',
+                '/MTd',
                 '/W3',
                 '/GX',
                 '/Z7',
@@ -326,11 +326,11 @@ class MSVCCompiler(CCompiler):
             ]
         else:
             # Win64
-            self.compile_options = ['/nologo', '/O2', '/MD', '/W3', '/GS-', '/DNDEBUG']
+            self.compile_options = ['/nologo', '/O2', '/MT', '/W3', '/GS-', '/DNDEBUG']
             self.compile_options_debug = [
                 '/nologo',
                 '/Od',
-                '/MDd',
+                '/MTd',
                 '/W3',
                 '/GS-',
                 '/Z7',
