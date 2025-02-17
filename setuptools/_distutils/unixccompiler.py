@@ -215,6 +215,8 @@ class UnixCCompiler(CCompiler):
 
         output_filename = self.library_filename(output_libname, output_dir=output_dir)
 
+        os.makedirs(os.path.dirname(output_filename), exist_ok=True)
+
         if self._need_link(objects, output_filename):
             self.mkpath(os.path.dirname(output_filename))
             self.spawn(self.archiver + [output_filename] + objects + self.objects)
