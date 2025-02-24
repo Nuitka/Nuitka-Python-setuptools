@@ -715,6 +715,7 @@ class Compiler:
         extra_postargs: list[str] | None = None,
         build_temp: str | os.PathLike[str] | None = None,
         target_lang: str | None = None,
+        extra_midargs = None,
     ):
         """Link a bunch of stuff together to create an executable or
         shared library file.
@@ -778,6 +779,7 @@ class Compiler:
         build_temp: str | os.PathLike[str] | None = None,
         target_lang: str | None = None,
     ):
+        raise NotImplementedError('Building shared libs is disabled for Nuitka-Python')
         self.link(
             Compiler.SHARED_LIBRARY,
             objects,
@@ -809,6 +811,7 @@ class Compiler:
         build_temp: str | os.PathLike[str] | None = None,
         target_lang: str | None = None,
     ):
+        raise NotImplementedError('Building shared libs is disabled for Nuitka-Python')
         self.link(
             Compiler.SHARED_OBJECT,
             objects,
@@ -837,6 +840,7 @@ class Compiler:
         extra_preargs: list[str] | None = None,
         extra_postargs: list[str] | None = None,
         target_lang: str | None = None,
+        extra_midargs = None,
     ):
         self.link(
             Compiler.EXECUTABLE,
@@ -852,6 +856,7 @@ class Compiler:
             extra_postargs,
             None,
             target_lang,
+            extra_midargs,
         )
 
     # -- Miscellaneous methods -----------------------------------------
@@ -1122,6 +1127,9 @@ int main (int argc, char **argv) {{
         fmt = getattr(self, lib_type + "_lib_format")
         ext = getattr(self, lib_type + "_lib_extension")
 
+        if libname.endswith(ext):
+            ext = ""
+
         dir, base = os.path.split(libname)
         filename = fmt % (base, ext)
         if strip_dir:
@@ -1390,5 +1398,9 @@ def gen_lib_options(
                     f"no library file corresponding to '{lib}' found (skipping)"
                 )
         else:
-            lib_opts.append(compiler.library_option(lib))
+            lib_file = compiler.find_library_file(library_dirs, lib_name)
+            if lib_file is not None and lib_file.endswith('.a'):
+                lib_opts.append(lib_file)
+            else:
+                lib_opts.append(compiler.library_option(lib))
     return lib_opts
