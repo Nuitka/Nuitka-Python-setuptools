@@ -306,6 +306,7 @@ class Compiler(base.Compiler):
         self.rc = _find_exe("rc.exe", paths)  # resource compiler
         self.mc = _find_exe("mc.exe", paths)  # message compiler
         self.mt = _find_exe("mt.exe", paths)  # message compiler
+        self.dumpbin = _find_exe("dumpbin.exe", paths)
 
         self.preprocess_options = None
         # bpo-38597: Always compile with dynamic linking
