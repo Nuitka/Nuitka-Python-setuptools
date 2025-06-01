@@ -312,7 +312,7 @@ class Compiler(base.Compiler):
         # bpo-38597: Always compile with dynamic linking
         # Future releases of Python 3.x will include all past
         # versions of vcruntime*.dll for compatibility.
-        self.compile_options = ['/nologo', '/O2', '/W3', '/GL', '/DNDEBUG', '/MT']
+        self.compile_options = ['/nologo', '/O2', '/W3', '/DNDEBUG', '/MT']
 
         self.compile_options_debug = [
             '/nologo',
